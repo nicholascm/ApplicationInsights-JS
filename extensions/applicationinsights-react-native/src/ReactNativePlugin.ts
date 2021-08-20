@@ -20,12 +20,13 @@ import {
     isUndefined
 } from '@microsoft/applicationinsights-core-js';
 import { ConfigurationManager, IDevice, IExceptionTelemetry, IAppInsights, SeverityLevel, AnalyticsPluginIdentifier  } from '@microsoft/applicationinsights-common';
-import DeviceInfo from 'react-native-device-info';
+
 
 import { INativeDevice, IReactNativePluginConfig } from './Interfaces';
 import dynamicProto from '@microsoft/dynamicproto-js';
 import { getGlobal, strShimUndefined } from '@microsoft/applicationinsights-shims';
-
+import { IDeviceInfo } from './Interfaces/IReactNativePluginConfig';
+import DeviceInfo from 'react-native-device-info';
 declare var global: Window;
 
 /**
@@ -49,11 +50,12 @@ export class ReactNativePlugin extends BaseTelemetryPlugin {
     identifier: string = 'AppInsightsReactNativePlugin';
     priority: number = 140;
     _nextPlugin?: ITelemetryPlugin;
+    _deviceInfo?: IDeviceInfo;
 
     private _setExceptionHandler: () => void;
     private _collectDeviceInfo: () => void;
 
-    constructor(config?: IReactNativePluginConfig) {
+    constructor(config?: IReactNativePluginConfig, deviceInfo?: IDeviceInfo) {
         super();
 
         let _device: INativeDevice = {};
@@ -122,9 +124,12 @@ export class ReactNativePlugin extends BaseTelemetryPlugin {
              */
             _self._collectDeviceInfo = () => {
                 try {
-                    _device.deviceClass = DeviceInfo.getDeviceType();
-                    _device.id = DeviceInfo.getUniqueId(); // Installation ID
-                    _device.model = DeviceInfo.getModel();
+                    if (!this._deviceInfo) {
+                        this._deviceInfo = DeviceInfo
+                    }
+                    _device.deviceClass = this._deviceInfo.getDeviceType()
+                    _device.id = this._deviceInfo.getUniqueId(); // Installation ID
+                    _device.model = this._deviceInfo.getModel();
                 } catch (e) {
                     _self.diagLog().warnToConsole("Failed to get DeviceInfo: " + getExceptionName(e) + " - " + dumpObj(e));
                 }
