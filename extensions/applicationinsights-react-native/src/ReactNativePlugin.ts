@@ -3,7 +3,7 @@
  * @copyright Microsoft 2019
  */
 
-import {
+ import {
     ITelemetryPlugin,
     ITelemetryItem,
     IPlugin,
@@ -20,9 +20,8 @@ import {
     isUndefined
 } from '@microsoft/applicationinsights-core-js';
 import { ConfigurationManager, IDevice, IExceptionTelemetry, IAppInsights, SeverityLevel, AnalyticsPluginIdentifier  } from '@microsoft/applicationinsights-common';
-import DeviceInfo from 'react-native-device-info';
 
-import { INativeDevice, IReactNativePluginConfig } from './Interfaces';
+import { INativeDevice, IReactNativePluginConfig, IDeviceInfo } from './Interfaces';
 import dynamicProto from '@microsoft/dynamicproto-js';
 import { getGlobal, strShimUndefined } from '@microsoft/applicationinsights-shims';
 
@@ -52,6 +51,7 @@ export class ReactNativePlugin extends BaseTelemetryPlugin {
 
     private _setExceptionHandler: () => void;
     private _collectDeviceInfo: () => void;
+    private _config: IReactNativePluginConfig
 
     constructor(config?: IReactNativePluginConfig) {
         super();
@@ -60,7 +60,8 @@ export class ReactNativePlugin extends BaseTelemetryPlugin {
         let _config: IReactNativePluginConfig = config || _getDefaultConfig();
         let _analyticsPlugin: IAppInsights;
         let _defaultHandler;
-    
+        this._config = config;
+
         dynamicProto(ReactNativePlugin, this, (_self, _base) => {
             _self.initialize = (
                 config?: IReactNativePluginConfig | object, // need `| object` to coerce to interface
@@ -122,9 +123,10 @@ export class ReactNativePlugin extends BaseTelemetryPlugin {
              */
             _self._collectDeviceInfo = () => {
                 try {
-                    _device.deviceClass = DeviceInfo.getDeviceType();
-                    _device.id = DeviceInfo.getUniqueId(); // Installation ID
-                    _device.model = DeviceInfo.getModel();
+                    let deviceInfo = this._config.deviceInfo
+                    _device.deviceClass = deviceInfo.getDeviceType();
+                    _device.id = deviceInfo.getUniqueId(); // Installation ID
+                    _device.model = deviceInfo.getModel();
                 } catch (e) {
                     _self.diagLog().warnToConsole("Failed to get DeviceInfo: " + getExceptionName(e) + " - " + dumpObj(e));
                 }

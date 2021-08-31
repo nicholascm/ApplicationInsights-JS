@@ -1,4 +1,4 @@
 import { INativeDevice } from './INativeDevice';
-import { IReactNativePluginConfig } from './IReactNativePluginConfig';
+import { IReactNativePluginConfig, IDeviceInfo } from './IReactNativePluginConfig';
 
-export { INativeDevice, IReactNativePluginConfig };
+export { INativeDevice, IReactNativePluginConfig, IDeviceInfo };

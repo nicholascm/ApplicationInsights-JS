@@ -5,30 +5,58 @@ React Native Plugin for the Application Insights Javascript SDK
 ## Getting Started
 >**This plugin relies on [`react-native-device-info`](https://github.com/rebeccahughes/react-native-device-info). You must install and link this package. Keep `react-native-device-info` up-to-date to collect the latest device names using your app.**
 
+
 ```zsh
 npm install --save @microsoft/applicationinsights-react-native @microsoft/applicationinsights-web
 npm install --save react-native-device-info
 react-native link react-native-device-info
 ```
 
-## Initializing the Plugin
+
+## Initializing the Plugin 
 To use this plugin, you only need to construct the plugin and add it as an `extension` to your existing Application Insights instance.
 ```ts
 import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 import { ReactNativePlugin } from '@microsoft/applicationinsights-react-native';
 
-var RNPlugin = new ReactNativePlugin();
-var appInsights = new ApplicationInsights({
+// for standard/bare/ejected RN apps  "react-native-device-info"
+// react-native-device-info can provide all the needed information
+let RNPlugin = new ReactNativePlugin({
+    deviceInfo: {
+        getUniqueId: DeviceInfo.getUniqueId; // Installation ID,
+        getDeviceType: DeviceInfo.getDeviceType,
+        getModel: DeviceInfo.getModel
+    }
+});
+
+// for Expo apps
+// Recommend to use expo-device and expo-constants dependencies
+
+let RNPlugin = new ReactNativePlugin({
+  deviceInfo: {
+    getUniqueId: () => Constants.deviceId,
+    getDeviceType: () => Device.modelId,
+    getModel: () => Device.modelName
+  }
+});
+
+
+let appInsights = new ApplicationInsights({
     config: {
         instrumentationKey: 'YOUR_INSTRUMENTATION_KEY_GOES_HERE',
         extensions: [RNPlugin]
     }
 });
+
 appInsights.loadAppInsights();
 ```
 
+
+
+## Initializing the Plugin for 
+
 ## Requirements
-You must be using a version `>=2.0.0` of `@microsoft/applicationinsights-web`. This plugin will only work in react-native apps, e.g. it will not work with `expo`.
+You must be using a version `>=2.0.0` of `@microsoft/applicationinsights-web`.
 
 ## Device Information Collected
 By default, this plugin automatically collects
